@@ -1,1 +1,706 @@
 # EU-strategii-for-Smart-Cities
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Cities — Bc. Martin Beránek</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap');
+ 
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+ 
+:root {
+  --sky:    #06101e;
+  --sky2:   #0a1628;
+  --blue1:  #4fc3f7;
+  --blue2:  #81d4fa;
+  --blue3:  #b3e5fc;
+  --blue4:  #e1f5fe;
+  --teal:   #26c6da;
+  --glow:   rgba(79,195,247,0.18);
+  --glowS:  rgba(79,195,247,0.06);
+  --white:  #e8f4fd;
+  --muted:  #5b8fa8;
+  --card:   rgba(10,22,40,0.85);
+  --bdr:    rgba(79,195,247,0.2);
+}
+ 
+html { scroll-behavior:smooth; }
+ 
+body {
+  background: var(--sky);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+ 
+/* ── FIXED BG CANVAS ── */
+#bgc {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+ 
+/* ── NAV ── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:500;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem 3rem;
+  background: rgba(6,16,30,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--bdr);
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; letter-spacing:.12em;
+  color: var(--blue1);
+}
+.nav-links { display:flex; gap:2.5rem; list-style:none; }
+.nav-links a {
+  color: var(--white); text-decoration:none;
+  font-size:.65rem; letter-spacing:.22em; text-transform:uppercase;
+  opacity:.4; transition:opacity .3s;
+}
+.nav-links a:hover { opacity:1; }
+ 
+#prog {
+  position:fixed; top:0; left:0; height:2px; width:0%;
+  background: linear-gradient(90deg, var(--teal), var(--blue1), var(--blue3));
+  z-index:999;
+}
+ 
+/* ── HERO ── */
+.hero {
+  position: relative; z-index:10;
+  height: 100vh;
+  display: flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:0 2rem;
+  overflow:hidden;
+}
+ 
+.hero-badge {
+  font-size:.6rem; letter-spacing:.5em; text-transform:uppercase;
+  color: var(--teal);
+  border: 1px solid rgba(38,198,218,.25);
+  padding:.4rem 1.5rem; margin-bottom:2rem;
+  opacity:0; animation:up .9s .3s forwards;
+}
+ 
+.hero h1 {
+  font-family:'Cormorant Garamond', serif;
+  font-size: clamp(3rem,9vw,8rem);
+  font-weight:300; line-height:1;
+  opacity:0; animation:up 1.1s .5s forwards;
+}
+.hero h1 em { font-style:italic; color:var(--blue1); }
+ 
+.hero-sub {
+  margin-top:1.8rem; font-size:.9rem; color:var(--muted);
+  max-width:500px; line-height:1.9;
+  opacity:0; animation:up .9s .8s forwards;
+}
+ 
+.hero-meta {
+  display:flex; gap:3rem; margin-top:2.5rem;
+  opacity:0; animation:up .9s 1s forwards;
+}
+.hm span { display:block; font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:.3rem; }
+.hm strong { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:400; }
+ 
+.scroll-cue {
+  position:absolute; bottom:2.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  font-size:.55rem; letter-spacing:.3em; text-transform:uppercase; color:var(--muted);
+  opacity:0; animation:up 1s 1.4s forwards;
+}
+.s-bar {
+  width:1px; height:44px;
+  background:linear-gradient(to bottom, var(--blue1), transparent);
+  animation:sbar 2s ease-in-out infinite;
+}
+@keyframes sbar {
+  0%{transform:scaleY(0);transform-origin:top;}
+  50%{transform:scaleY(1);transform-origin:top;}
+  51%{transform:scaleY(1);transform-origin:bottom;}
+  100%{transform:scaleY(0);transform-origin:bottom;}
+}
+ 
+/* ── WATERFALL SCENE ── */
+.scene-section {
+  position: relative; z-index:10;
+  height: 500vh; /* scroll space */
+}
+ 
+.scene-sticky {
+  position: sticky; top:0; height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  overflow:hidden;
+}
+ 
+.scene-title {
+  font-family:'Cormorant Garamond', serif;
+  font-size:1rem; font-weight:300;
+  letter-spacing:.4em; text-transform:uppercase;
+  color:var(--blue1); opacity:.5;
+  margin-bottom:1.5rem;
+  z-index:20;
+}
+ 
+/* 3D STAGE */
+.stage3d {
+  position:relative;
+  width: min(700px, 90vw);
+  height: 500px;
+  perspective: 1200px;
+  perspective-origin: 50% 45%;
+}
+ 
+/* WATERFALL — center column */
+#wf-canvas {
+  position:absolute;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  z-index:5;
+  pointer-events:none;
+  border-radius:4px;
+}
+ 
+/* glow behind waterfall */
+.wf-glow {
+  position:absolute;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:90px; height:320px;
+  background: radial-gradient(ellipse at center, rgba(79,195,247,.22) 0%, transparent 70%);
+  z-index:4;
+  pointer-events:none;
+  animation:glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100%{opacity:.7;} 50%{opacity:1;}
+}
+ 
+/* ORBITAL RING */
+.orbit-ring {
+  position:absolute;
+  left:50%; top:50%;
+  width:480px; height:480px;
+  margin-left:-240px; margin-top:-240px;
+  transform-style:preserve-3d;
+  /* JS rotates this */
+}
+ 
+/* individual card slot on orbit */
+.orbit-card {
+  position:absolute;
+  width:170px; height:220px;
+  left:50%; top:50%;
+  margin-left:-85px; margin-top:-110px;
+  transform-style:preserve-3d;
+  cursor:pointer;
+  /* JS sets translateX/Y/Z + rotateY per card */
+}
+ 
+/* flip inner */
+.oc-inner {
+  position:relative;
+  width:100%; height:100%;
+  transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.4,0,.2,1);
+}
+.orbit-card.flipped .oc-inner { transform:rotateY(180deg); }
+ 
+/* front & back */
+.oc-front, .oc-back {
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  border-radius:3px;
+  display:flex; flex-direction:column;
+  justify-content:space-between;
+  padding:1.2rem 1rem;
+  border:1px solid var(--bdr);
+  backdrop-filter:blur(12px);
+}
+.oc-front {
+  background: var(--card);
+  box-shadow: 0 0 30px rgba(79,195,247,.08), inset 0 1px 0 rgba(79,195,247,.15);
+}
+.oc-back {
+  background: rgba(6,28,50,0.92);
+  transform:rotateY(180deg);
+  border-color:rgba(38,198,218,.3);
+  box-shadow: 0 0 40px rgba(38,198,218,.12);
+}
+ 
+/* card active glow */
+.orbit-card.active .oc-front {
+  border-color:rgba(79,195,247,.5);
+  box-shadow:0 0 40px rgba(79,195,247,.18), inset 0 1px 0 rgba(79,195,247,.3);
+}
+ 
+.oc-num {
+  font-size:.55rem; letter-spacing:.35em; text-transform:uppercase;
+  color:var(--blue1); opacity:.5;
+}
+.oc-icon { font-size:1.8rem; text-align:center; }
+.oc-title {
+  font-family:'Cormorant Garamond', serif;
+  font-size:1.05rem; font-weight:400; line-height:1.25;
+  color:var(--blue3);
+}
+.oc-title em { font-style:italic; color:var(--blue1); }
+ 
+.oc-hint {
+  font-size:.5rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--muted); opacity:.5;
+}
+ 
+/* back face */
+.oc-back-tag {
+  font-size:.52rem; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--teal); opacity:.7;
+}
+.oc-back ul {
+  list-style:none; display:flex; flex-direction:column; gap:.45rem; flex:1; margin:.6rem 0;
+}
+.oc-back ul li {
+  font-size:.68rem; color:var(--muted); line-height:1.5;
+  display:flex; gap:.4rem;
+}
+.oc-back ul li::before { content:'—'; color:var(--blue1); opacity:.5; flex-shrink:0; }
+.oc-back-close {
+  font-size:.5rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--teal); opacity:.5; text-align:center;
+}
+ 
+/* dots */
+.orbit-dots {
+  display:flex; gap:8px; margin-top:2rem; z-index:20;
+}
+.odot {
+  width:5px; height:5px; border-radius:50%;
+  background:var(--muted); opacity:.2;
+  transition:opacity .4s, background .4s, transform .4s;
+}
+.odot.on { opacity:1; background:var(--blue1); transform:scale(1.5); }
+ 
+/* ── INFO SECTION ── */
+.info-section {
+  position:relative; z-index:10;
+  display:grid; grid-template-columns:1fr 2fr;
+  border-top:1px solid var(--bdr);
+}
+.info-left {
+  padding:5rem 3rem;
+  border-right:1px solid var(--bdr);
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.info-left h2 {
+  font-family:'Cormorant Garamond', serif;
+  font-size:2.2rem; font-weight:300; line-height:1.2;
+  margin-top:.5rem;
+}
+.info-left h2 em { font-style:italic; color:var(--blue1); }
+.s-label { font-size:.58rem; letter-spacing:.4em; text-transform:uppercase; color:var(--teal); }
+ 
+.kws { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:1.5rem; }
+.kw {
+  font-size:.55rem; letter-spacing:.15em; text-transform:uppercase;
+  padding:.28rem .7rem; border:1px solid var(--bdr); color:var(--muted);
+  transition:border-color .3s, color .3s;
+}
+.kw:hover { border-color:var(--blue1); color:var(--blue1); }
+ 
+.info-right { padding:5rem 4rem; }
+.info-right p { font-size:.9rem; line-height:2; color:var(--muted); margin-bottom:1.4rem; }
+ 
+/* ── CHAPTERS ── */
+.ch-section {
+  position:relative; z-index:10;
+  padding:6rem 3rem;
+  border-top:1px solid var(--bdr);
+}
+.ch-section h2 {
+  font-family:'Cormorant Garamond', serif;
+  font-size:2.5rem; font-weight:300; margin-bottom:3rem;
+}
+.ch-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  background:var(--bdr);
+}
+.ch-item {
+  background:var(--sky); padding:1.8rem 2rem;
+  display:flex; gap:1.5rem;
+  transition:background .3s;
+}
+.ch-item:hover { background:var(--sky2); }
+.ch-n {
+  font-family:'Cormorant Garamond', serif;
+  font-size:2rem; color:rgba(79,195,247,.15);
+  flex-shrink:0; width:2.5rem; line-height:1;
+}
+.ch-body h4 { font-weight:400; font-size:.85rem; letter-spacing:.04em; margin-bottom:.35rem; }
+.ch-body p { font-size:.72rem; color:var(--muted); line-height:1.75; }
+ 
+/* ── FOOTER ── */
+footer {
+  position:relative; z-index:10;
+  padding:3.5rem 3rem;
+  border-top:1px solid var(--bdr);
+  display:flex; justify-content:space-between; align-items:flex-end;
+  flex-wrap:wrap; gap:1.5rem;
+}
+footer h3 { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:1.1rem; margin-bottom:.4rem; }
+footer p { font-size:.7rem; color:var(--muted); line-height:1.8; }
+.footer-r { text-align:right; }
+ 
+/* ── UTILS ── */
+@keyframes up {
+  from{opacity:0;transform:translateY(24px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.reveal { opacity:0; transform:translateY(28px); transition:opacity .9s,transform .9s; }
+.reveal.vis { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+ 
+<div id="prog"></div>
+<canvas id="bgc"></canvas>
+ 
+<nav>
+  <div class="nav-logo">Smart Cities · 2026</div>
+  <ul class="nav-links">
+    <li><a href="#scene">Témata</a></li>
+    <li><a href="#about">Abstrakt</a></li>
+    <li><a href="#chapters">Kapitoly</a></li>
+  </ul>
+</nav>
+ 
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Diplomová práce · ČZU Praha · PEF · 2026</div>
+  <h1>Politiky EU<br>pro <em>Smart Cities</em></h1>
+  <p class="hero-sub">Komparativní analýza institucionálních rámců a investičních strategií digitální transformace měst — ČR vs. Francie.</p>
+  <div class="hero-meta">
+    <div class="hm"><span>Autor</span><strong>Bc. Martin Beránek</strong></div>
+    <div class="hm"><span>Vedoucí</span><strong>doc. Ing. Karel Tomšík, Ph.D.</strong></div>
+    <div class="hm"><span>Rok</span><strong>2026</strong></div>
+  </div>
+  <div class="scroll-cue"><span>Táhni dolů</span><div class="s-bar"></div></div>
+</section>
+ 
+<!-- WATERFALL + ORBIT CARDS -->
+<section class="scene-section" id="scene">
+  <div class="scene-sticky">
+    <div class="scene-title">Klíčová témata — klikni na kartu</div>
+    <div class="stage3d" id="stage">
+ 
+      <div class="wf-glow"></div>
+      <canvas id="wf-canvas" width="70" height="340"></canvas>
+ 
+      <div class="orbit-ring" id="ring">
+        <!-- cards injected by JS -->
+      </div>
+ 
+    </div>
+    <div class="orbit-dots" id="dots"></div>
+  </div>
+</section>
+ 
+<!-- ABSTRACT -->
+<section class="info-section reveal" id="about">
+  <div class="info-left">
+    <div>
+      <span class="s-label">Abstrakt</span>
+      <h2>Inteligentní<br>město <em>dnes</em><br>a zítra</h2>
+    </div>
+    <div class="kws">
+      <span class="kw">Smart City</span>
+      <span class="kw">Digitální transformace</span>
+      <span class="kw">France 2030</span>
+      <span class="kw">Lab2051</span>
+      <span class="kw">Reg. pískoviště</span>
+      <span class="kw">Tech. suverenita</span>
+      <span class="kw">Veřejná správa</span>
+      <span class="kw">IoT & AI</span>
+    </div>
+  </div>
+  <div class="info-right">
+    <p>Tato diplomová práce se věnuje komparativní analýze systémů veřejné správy a regionálních politik zaměřených na podporu konceptu Smart Cities. Hlavním cílem je vyhodnotit efektivnost institucionálních rámců a investičních strategií v kontextu digitální transformace měst.</p>
+    <p>Zatímco český model je charakteristický vysokou dotační závislostí na evropských fondech, francouzský plán France 2030 sází na suverénní národní financování, strategickou selektivitu a dlouhodobou technologickou suverenitu.</p>
+    <p>V závěru jsou formulovány konkrétní návrhy — zřízení národního mediátora pro inovace po vzoru Lab2051, legislativní ukotvení inkubační fáze a zavedení regulačních pískovišť pro testování v reálném urbánním prostředí.</p>
+  </div>
+</section>
+ 
+<!-- CHAPTERS -->
+<section class="ch-section reveal" id="chapters">
+  <span class="s-label" style="display:block;margin-bottom:.8rem;">Struktura práce</span>
+  <h2>Kapitoly</h2>
+  <div class="ch-grid">
+    <div class="ch-item"><div class="ch-n">1</div><div class="ch-body"><h4>Úvod</h4><p>Uvedení do problematiky, motivace k výběru tématu a vymezení výzkumných otázek.</p></div></div>
+    <div class="ch-item"><div class="ch-n">2</div><div class="ch-body"><h4>Cíl práce a metodika</h4><p>Hlavní a dílčí cíle, vědecké metody, zdroje dat a analytický rámec srovnání.</p></div></div>
+    <div class="ch-item"><div class="ch-n">3</div><div class="ch-body"><h4>Teoretická východiska</h4><p>Konceptuální vymezení, historický kontext, pilíře Smart City, technologie, ekonomické rámce.</p></div></div>
+    <div class="ch-item"><div class="ch-n">4</div><div class="ch-body"><h4>Analýza — Česká republika</h4><p>Institucionální rámec, dotační závislost, příklady měst a administrativní překážky.</p></div></div>
+    <div class="ch-item"><div class="ch-n">5</div><div class="ch-body"><h4>Analýza — Francie 2030</h4><p>Suverénní financování, Lab2051, strategická selektivita a technologická suverenita.</p></div></div>
+    <div class="ch-item"><div class="ch-n">6</div><div class="ch-body"><h4>Komparace a závěry</h4><p>Srovnání obou modelů, doporučení pro českou praxi a regulační pískoviště.</p></div></div>
+  </div>
+</section>
+ 
+<footer class="reveal">
+  <div>
+    <h3>Bc. Martin Beránek</h3>
+    <p>Diplomová práce · Provozně ekonomická fakulta<br>
+    Česká zemědělská univerzita v Praze<br>
+    Vedoucí: doc. Ing. Karel Tomšík, Ph.D.</p>
+  </div>
+  <div class="footer-r">
+    <p>Politiky a strategie EU<br>pro podporu Smart Cities</p>
+    <p style="margin-top:.4rem;font-size:.58rem;opacity:.3;">© 2026 ČZU v Praze</p>
+  </div>
+</footer>
+ 
+<script>
+/* ══ BG CANVAS — 3D floating blue bubbles ══ */
+(function(){
+  const c=document.getElementById('bgc'),ctx=c.getContext('2d');
+  let W,H,balls=[];
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;}
+  resize(); addEventListener('resize',()=>{resize();init();});
+ 
+  function rnd(a,b){return a+Math.random()*(b-a);}
+ 
+  function init(){
+    balls=[];
+    const n=Math.floor(W*H/18000);
+    for(let i=0;i<n;i++){
+      const r=rnd(2,18);
+      balls.push({
+        x:rnd(0,W), y:rnd(0,H),
+        r,
+        vx:rnd(-.12,.12), vy:rnd(-.18,.06),
+        a:rnd(.04,.22),
+        ph:rnd(0,Math.PI*2),
+        sp:rnd(.004,.012),
+        hue:rnd(190,220), // blue range
+        depth:rnd(.2,1)   // simulates z-depth
+      });
+    }
+  }
+ 
+  let f=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H); f++;
+    // subtle gradient sky
+    const grd=ctx.createRadialGradient(W/2,H*.3,0,W/2,H*.3,W*.8);
+    grd.addColorStop(0,'rgba(10,30,60,.3)');
+    grd.addColorStop(1,'rgba(6,16,30,0)');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+ 
+    balls.forEach(b=>{
+      b.x+=b.vx*b.depth; b.y+=b.vy*b.depth;
+      if(b.x<-20)b.x=W+20; if(b.x>W+20)b.x=-20;
+      if(b.y<-20)b.y=H+20; if(b.y>H+20)b.y=-20;
+      const pulse=b.a+Math.sin(f*b.sp+b.ph)*.06;
+      const size=b.r*b.depth;
+ 
+      // 3D sphere look: radial gradient
+      const g=ctx.createRadialGradient(b.x-size*.3,b.y-size*.3,size*.1,b.x,b.y,size);
+      g.addColorStop(0,`hsla(${b.hue},90%,85%,${pulse*1.5})`);
+      g.addColorStop(.4,`hsla(${b.hue},80%,65%,${pulse})`);
+      g.addColorStop(1,`hsla(${b.hue},70%,40%,0)`);
+      ctx.beginPath(); ctx.arc(b.x,b.y,size,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+ 
+      // rim highlight
+      ctx.beginPath(); ctx.arc(b.x,b.y,size,0,Math.PI*2);
+      ctx.strokeStyle=`hsla(${b.hue},90%,80%,${pulse*.4})`;
+      ctx.lineWidth=.5; ctx.stroke();
+    });
+    requestAnimationFrame(draw);
+  }
+  init(); draw();
+})();
+ 
+/* ══ WATERFALL CANVAS ══ */
+(function(){
+  const c=document.getElementById('wf-canvas'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const drops=[];
+  for(let i=0;i<60;i++){
+    drops.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      len:Math.random()*30+10,
+      spd:Math.random()*3+2,
+      a:Math.random()*.5+.15,
+      w:Math.random()*1.5+.3
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    drops.forEach(d=>{
+      d.y+=d.spd;
+      if(d.y-d.len>H){d.y=-d.len;d.x=Math.random()*W;}
+      const g=ctx.createLinearGradient(d.x,d.y-d.len,d.x,d.y);
+      g.addColorStop(0,'rgba(79,195,247,0)');
+      g.addColorStop(.5,`rgba(129,212,250,${d.a})`);
+      g.addColorStop(1,'rgba(179,229,252,0)');
+      ctx.beginPath(); ctx.moveTo(d.x,d.y-d.len); ctx.lineTo(d.x,d.y);
+      ctx.strokeStyle=g; ctx.lineWidth=d.w; ctx.stroke();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+ 
+/* ══ PROGRESS BAR ══ */
+addEventListener('scroll',()=>{
+  const max=document.documentElement.scrollHeight-innerHeight;
+  document.getElementById('prog').style.width=(scrollY/max*100)+'%';
+});
+ 
+/* ══ ORBIT CARDS ══ */
+(function(){
+  const CARDS=[
+    {
+      num:'01',icon:'🏙️',
+      title:'Smart City —<br><em>definice</em> a pilíře',
+      tag:'Teoretická část',
+      points:['Historický vývoj konceptu Smart City','Smart Economy, People, Governance, Living','Sociální determinanty kvality života','Srovnání Sustainable vs. Smart City']
+    },
+    {
+      num:'02',icon:'🤖',
+      title:'Technologie<br>a <em>digitální</em> ekosystémy',
+      tag:'Technologická vrstva',
+      points:['Big Data a Cloud computing','Městský datový ekosystém','Umělá inteligence ve veřejné správě','IoT a propojená infrastruktura']
+    },
+    {
+      num:'03',icon:'🇨🇿',
+      title:'ČR vs.<br><em>Francie</em> 2030',
+      tag:'Komparativní analýza',
+      points:['ČR: dotační závislost na EU fondech','France 2030: suverénní financování','Lab2051 jako vzor pro ČR','Mobilizace soukromého kapitálu']
+    },
+    {
+      num:'04',icon:'💶',
+      title:'Financování<br>a <em>investice</em>',
+      tag:'Ekonomická analýza',
+      points:['Program DIGITAL 2021–2027','PPP partnerství v praxi','Investiční kapacita územních celků','Rozpočtová odpovědnost v ČR']
+    },
+    {
+      num:'05',icon:'⚖️',
+      title:'Governance<br>a <em>legislativa</em>',
+      tag:'Správa a právo',
+      points:['Modely vládnutí a víceúrovňová analýza','Role státu — rámec a povinnosti','Legislativní rámec Smart City v ČR','Kybernetická ochrana chytrých měst']
+    },
+    {
+      num:'06',icon:'🎯',
+      title:'Závěry<br>a <em>doporučení</em>',
+      tag:'Praktický výstup',
+      points:['Národní inovační mediátor (Lab2051)','Legislativní ukotvení inkubace','Regulační pískoviště v urbánním prostředí','Reforma rozdělování EU fondů']
+    },
+  ];
+ 
+  const ring=document.getElementById('ring');
+  const dotsEl=document.getElementById('dots');
+  const section=document.getElementById('scene');
+  const N=CARDS.length;
+  const R=230; // orbit radius
+ 
+  // Build cards
+  const cardEls=CARDS.map((d,i)=>{
+    const el=document.createElement('div');
+    el.className='orbit-card'+(i===0?' active':'');
+    el.innerHTML=`
+      <div class="oc-inner">
+        <div class="oc-front">
+          <span class="oc-num">${d.num} / 0${N}</span>
+          <div class="oc-icon">${d.icon}</div>
+          <div class="oc-title">${d.title}</div>
+          <div class="oc-hint">↓ klikni</div>
+        </div>
+        <div class="oc-back">
+          <span class="oc-back-tag">${d.tag}</span>
+          <ul>${d.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+          <div class="oc-back-close">↑ zpět</div>
+        </div>
+      </div>`;
+    el.addEventListener('click',()=>el.classList.toggle('flipped'));
+    ring.appendChild(el);
+    return el;
+  });
+ 
+  // Build dots
+  CARDS.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='odot'+(i===0?' on':'');
+    dotsEl.appendChild(d);
+  });
+  const dots=Array.from(dotsEl.querySelectorAll('.odot'));
+ 
+  // Position cards on a circle in 3D (tilted ring)
+  function positionCards(ringRotY){
+    cardEls.forEach((el,i)=>{
+      const angle=(360/N)*i; // degrees around circle
+      const rad=angle*Math.PI/180;
+      const x=Math.sin(rad)*R;
+      const z=Math.cos(rad)*R;
+      // tilt ring slightly (X axis tilt for 3D feel)
+      const tiltRad=20*Math.PI/180;
+      const y=-Math.sin(tiltRad)*z*.35;
+      // face card outward
+      el.style.transform=`translate3d(${x}px,${y}px,${z}px) rotateY(${angle}deg)`;
+      // scale by depth for perspective feel
+      const depth=(z+R)/(R*2); // 0..1
+      const sc=0.72+depth*0.28;
+      el.style.transform+=` scale(${sc})`;
+      el.style.zIndex=Math.round(depth*100);
+    });
+  }
+ 
+  let curRot=0, tgtRot=0, activeIdx=0;
+ 
+  function animate(){
+    curRot+=(tgtRot-curRot)*.07;
+    // rotate the ring
+    ring.style.transform=`rotateY(${curRot}deg) rotateX(-12deg)`;
+    positionCards(curRot);
+ 
+    // find front card (smallest angle diff to 0)
+    const step=360/N;
+    const norm=(((-curRot%360)+360)%360);
+    const idx=Math.round(norm/step)%N;
+    if(idx!==activeIdx){
+      cardEls[activeIdx].classList.remove('active');
+      dots[activeIdx].classList.remove('on');
+      activeIdx=idx;
+      cardEls[activeIdx].classList.add('active');
+      dots[activeIdx].classList.add('on');
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+ 
+  function onScroll(){
+    const rect=section.getBoundingClientRect();
+    const sH=section.offsetHeight;
+    const vH=innerHeight;
+    const prog=Math.min(1,Math.max(0,-rect.top/(sH-vH)));
+    tgtRot=prog*720; // two full spins
+  }
+  addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+})();
+ 
+/* ══ REVEAL ══ */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
